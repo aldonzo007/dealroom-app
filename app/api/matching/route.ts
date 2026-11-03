@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { getCliente, getInmueblesDisponibles, generarToken } from "@/lib/data";
 import { matchInmuebles } from "@/lib/matching";
+import { upsertContactoGHL } from "@/lib/ghl";
 import { PerfilProspecto } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -18,14 +19,12 @@ export async function POST(req: NextRequest) {
     const cliente = await getCliente(cliente_slug);
     if (!cliente) return NextResponse.json({ ok: false, error: "cliente no encontrado" }, { status: 404 });
 
-    // Matching contra el catálogo del cliente
     const inmuebles = await getInmueblesDisponibles(cliente.id);
     const matches = matchInmuebles(inmuebles, perfil);
 
     const sb = getServiceClient();
     const token = generarToken();
 
-    // Crear el deal room (persiste el match para que el prospecto pueda volver)
     const { error } = await sb.from("deal_rooms").insert({
       token,
       client_id: cliente.id,
@@ -38,7 +37,17 @@ export async function POST(req: NextRequest) {
     });
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
 
-    // TODO fase siguiente: crear contacto en GHL + disparar workflow de envío de link + notificar al broker
+    // CONEXIÓN 1: crear contacto en GHL (no bloquea la experiencia del prospecto)
+    try {
+      const origin = req.headers.get("origin") || `https://${req.headers.get("host")}`;
+      const dealRoomUrl = `${origin}/${cliente_slug}/d/${token}`;
+      const contactId = await upsertContactoGHL(cliente, { nombre, email, whatsapp, perfil, dealRoomUrl });
+      if (contactId) {
+        await sb.from("deal_rooms").update({ ghl_contact_id: contactId }).eq("token", token);
+      }
+    } catch {
+      // si GHL falla, el prospecto igual ve su deal room
+    }
 
     return NextResponse.json({ ok: true, token, matched_count: matches.length });
   } catch (e) {

@@ -19,6 +19,7 @@ export interface Cliente {
   broker_nombre: string | null;
   broker_whatsapp: string | null;
   ghl_location_id: string | null;
+  ghl_token: string | null;
   calendar_url: string | null;
   activo: boolean;
 }
