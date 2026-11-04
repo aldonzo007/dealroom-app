@@ -17,7 +17,7 @@ async function getDealRoomFieldId(cliente: Cliente): Promise<string | null> {
   const loc = cliente.ghl_location_id!;
   if (loc in fieldIdCache) return fieldIdCache[loc];
   try {
-    const res = await fetch(`${BASE}/locations/${loc}/customFields?model=contact`, {
+    const res = await fetch(`${BASE}/locations/${loc}/customFields`, {
       headers: headers(cliente.ghl_token!),
     });
     if (!res.ok) { fieldIdCache[loc] = null; return null; }
@@ -61,7 +61,7 @@ export async function upsertContactoGHL(
   try {
     // Guardar el link del deal room en el campo del contacto (si existe)
     const fieldId = await getDealRoomFieldId(cliente);
-    const customFields = fieldId ? [{ id: fieldId, value: data.dealRoomUrl }] : undefined;
+    const customFields = fieldId ? [{ id: fieldId, field_value: data.dealRoomUrl }] : undefined;
 
     const res = await fetch(`${BASE}/contacts/upsert`, {
       method: "POST",
@@ -108,7 +108,7 @@ export async function escribirDealRoomUrl(cliente: Cliente, contactId: string, u
     const res = await fetch(`${BASE}/contacts/${contactId}`, {
       method: "PUT",
       headers: headers(cliente.ghl_token),
-      body: JSON.stringify({ customFields: [{ id: fieldId, value: url }] }),
+      body: JSON.stringify({ customFields: [{ id: fieldId, field_value: url }] }),
     });
     return res.ok;
   } catch {
