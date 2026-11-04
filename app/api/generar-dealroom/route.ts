@@ -26,13 +26,33 @@ function toArray(v: unknown): string[] {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const {
-      cliente_slug, contact_id, nombre,
-      tipo_buscado, operacion, objetivo, presupuesto, ciudades, timing,
-    } = body;
 
-    const cliente = await getCliente(cliente_slug);
-    if (!cliente) return NextResponse.json({ ok: false, error: "cliente no encontrado" }, { status: 404 });
+    // GHL puede mandar el custom data al nivel raíz o anidado; buscamos en ambos
+    const cd = body.customData || body.custom_data || {};
+    const g = (k: string) => {
+      const v = body[k] ?? cd[k];
+      return typeof v === "string" ? v.trim() : v;
+    };
+
+    const cliente_slug = g("cliente_slug");
+    const contact_id = g("contact_id");
+    const nombre = g("nombre");
+    const tipo_buscado = g("tipo_buscado");
+    const operacion = g("operacion");
+    const objetivo = g("objetivo");
+    const presupuesto = g("presupuesto");
+    const ciudades = g("ciudades");
+    const timing = g("timing");
+
+    const cliente = cliente_slug ? await getCliente(cliente_slug) : null;
+    if (!cliente) {
+      return NextResponse.json({
+        ok: false,
+        error: "cliente no encontrado",
+        slug_recibido: cliente_slug ?? null,
+        llaves_recibidas: Object.keys(body),
+      }, { status: 404 });
+    }
     if (!contact_id) return NextResponse.json({ ok: false, error: "falta contact_id" }, { status: 400 });
 
     // Normalizar el perfil como venga de GHL
