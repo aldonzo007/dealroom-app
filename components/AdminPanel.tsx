@@ -6,25 +6,69 @@ const TIPOS = ["terreno", "bodega_industrial", "nave_industrial", "oficina", "lo
 const RANGOS = ["bajo", "medio", "alto", "premium", "ultra"];
 const OBJETIVOS = ["inversion_con_renta", "reventa", "operacion_propia", "patrimonial", "uso_mixto"];
 
-const vacio = {
-  nombre_interno: "", tipo: "terreno", operacion: "venta", estatus: "disponible",
-  ciudad: "", zona: "", direccion: "", maps_link: "",
-  m2_construidos: 0, m2_terreno: 0, ano_construccion: "", altura_libre: 0, andenes: 0, cajones: 0, banos: 0, recamaras: 0,
-  precio_venta: 0, precio_renta: 0, rango_inversion: "alto",
-  renta_promedio_m2: 0, ocupacion_zona: 0, plusvalia_anual: 0,
-  fotos: "", pdf_ficha: "", video_tour: "", broker_nombre: "", broker_whatsapp: "",
-  objetivo_recomendado: [] as string[],
+type FormState = {
+  id?: string;
+  client_id: string;
+  nombre_interno: string; tipo: string; operacion: string; estatus: string;
+  ciudad: string; zona: string; direccion: string; maps_link: string;
+  m2_construidos: number; m2_terreno: number; ano_construccion: string;
+  altura_libre: number; andenes: number; cajones: number; banos: number; recamaras: number;
+  precio_venta: number; precio_renta: number; rango_inversion: string;
+  renta_promedio_m2: number; ocupacion_zona: number; plusvalia_anual: number;
+  fotos: string[]; pdf_ficha: string; video_tour: string;
+  broker_nombre: string; broker_whatsapp: string;
+  objetivo_recomendado: string[];
 };
+
+function vacio(clientId: string): FormState {
+  return {
+    client_id: clientId,
+    nombre_interno: "", tipo: "terreno", operacion: "venta", estatus: "disponible",
+    ciudad: "", zona: "", direccion: "", maps_link: "",
+    m2_construidos: 0, m2_terreno: 0, ano_construccion: "", altura_libre: 0, andenes: 0, cajones: 0, banos: 0, recamaras: 0,
+    precio_venta: 0, precio_renta: 0, rango_inversion: "alto",
+    renta_promedio_m2: 0, ocupacion_zona: 0, plusvalia_anual: 0,
+    fotos: [], pdf_ficha: "", video_tour: "", broker_nombre: "", broker_whatsapp: "",
+    objetivo_recomendado: [],
+  };
+}
 
 export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; inmuebles: Inmueble[] }) {
   const [pass, setPass] = useState("");
   const [authed, setAuthed] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<any>({ ...vacio, client_id: cliente.id });
+  const [form, setForm] = useState<FormState>(vacio(cliente.id));
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [list, setList] = useState(inmuebles);
 
-  function set(k: string, v: unknown) { setForm((f: any) => ({ ...f, [k]: v })); }
+  function set<K extends keyof FormState>(k: K, v: FormState[K]) { setForm((f) => ({ ...f, [k]: v })); }
+
+  function nuevo() { setForm(vacio(cliente.id)); setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function editar(inm: Inmueble) {
+    setForm({ ...(inm as any) });
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function subirArchivos(files: FileList | null, destino: "fotos" | "pdf") {
+    if (!files || !files.length) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      Array.from(files).forEach((f) => fd.append("files", f));
+      const res = await fetch("/api/admin/upload", { method: "POST", headers: { "x-admin-pass": pass }, body: fd });
+      const data = await res.json();
+      if (data.ok) {
+        if (destino === "fotos") set("fotos", [...form.fotos, ...data.urls]);
+        else set("pdf_ficha", data.urls[0]);
+      } else {
+        alert("Error al subir: " + (data.error || ""));
+      }
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function guardar() {
     setSaving(true);
@@ -35,11 +79,8 @@ export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; i
     });
     const data = await res.json();
     setSaving(false);
-    if (data.ok) {
-      window.location.reload();
-    } else {
-      alert("Error: " + (data.error || "no se pudo guardar"));
-    }
+    if (data.ok) window.location.reload();
+    else alert("Error: " + (data.error || "no se pudo guardar"));
   }
 
   async function borrar(id: string) {
@@ -65,13 +106,14 @@ export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; i
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="serif text-3xl text-navy-900">Inmuebles · {cliente.nombre}</h1>
-          <button onClick={() => { setForm({ ...vacio, client_id: cliente.id }); setShowForm(!showForm); }} className="bg-navy-900 text-white px-5 py-2.5 text-sm font-medium">
+          <button onClick={showForm ? () => setShowForm(false) : nuevo} className="bg-navy-900 text-white px-5 py-2.5 text-sm font-medium">
             {showForm ? "Cerrar" : "+ Agregar inmueble"}
           </button>
         </div>
 
         {showForm && (
           <div className="bg-white border border-navy-900/10 p-6 mb-8 space-y-4">
+            {form.id && <div className="text-xs text-gold-dark uppercase tracking-wide">Editando: {form.nombre_interno}</div>}
             <F label="Nombre interno"><input className="inp" value={form.nombre_interno} onChange={(e) => set("nombre_interno", e.target.value)} /></F>
             <div className="grid grid-cols-2 gap-4">
               <F label="Tipo"><select className="inp" value={form.tipo} onChange={(e) => set("tipo", e.target.value)}>{TIPOS.map((t) => <option key={t} value={t}>{tipoLabel(t as any)}</option>)}</select></F>
@@ -108,21 +150,47 @@ export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; i
               <div className="flex flex-wrap gap-2">
                 {OBJETIVOS.map((o) => {
                   const on = form.objetivo_recomendado.includes(o);
-                  return <button key={o} type="button" onClick={() => set("objetivo_recomendado", on ? form.objetivo_recomendado.filter((x: string) => x !== o) : [...form.objetivo_recomendado, o])} className={`px-3 py-1.5 text-xs border ${on ? "border-gold bg-gold/10" : "border-navy-900/20"}`}>{o}</button>;
+                  return <button key={o} type="button" onClick={() => set("objetivo_recomendado", on ? form.objetivo_recomendado.filter((x) => x !== o) : [...form.objetivo_recomendado, o])} className={`px-3 py-1.5 text-xs border ${on ? "border-gold bg-gold/10" : "border-navy-900/20"}`}>{o}</button>;
                 })}
               </div>
             </F>
-            <F label="Fotos (una URL por línea)"><textarea className="inp h-24" value={form.fotos} onChange={(e) => set("fotos", e.target.value)} /></F>
+
+            {/* FOTOS */}
+            <F label="Fotos">
+              <div className="space-y-3">
+                {form.fotos.length > 0 && (
+                  <div className="grid grid-cols-5 gap-2">
+                    {form.fotos.map((url, i) => (
+                      <div key={i} className="relative aspect-square group">
+                        <img src={url} alt="" className="w-full h-full object-cover border border-navy-900/10" />
+                        <button type="button" onClick={() => set("fotos", form.fotos.filter((_, j) => j !== i))} className="absolute top-1 right-1 bg-navy-900/80 text-white w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <input type="file" accept="image/*" multiple onChange={(e) => subirArchivos(e.target.files, "fotos")} className="text-sm" />
+                {uploading && <span className="text-xs text-gold-dark ml-2">Subiendo...</span>}
+              </div>
+            </F>
+
+            {/* PDF */}
+            <F label="Ficha técnica (PDF)">
+              <div className="space-y-2">
+                {form.pdf_ficha && <a href={form.pdf_ficha} target="_blank" rel="noopener" className="text-sm text-gold-dark underline block">Ver PDF actual</a>}
+                <input type="file" accept="application/pdf" onChange={(e) => subirArchivos(e.target.files, "pdf")} className="text-sm" />
+              </div>
+            </F>
+
             <div className="grid grid-cols-2 gap-4">
-              <F label="PDF ficha (URL)"><input className="inp" value={form.pdf_ficha} onChange={(e) => set("pdf_ficha", e.target.value)} /></F>
+              <F label="Video o tour (URL YouTube/Vimeo)"><input className="inp" value={form.video_tour} onChange={(e) => set("video_tour", e.target.value)} /></F>
               <F label="Maps link (URL)"><input className="inp" value={form.maps_link} onChange={(e) => set("maps_link", e.target.value)} /></F>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <F label="Broker nombre"><input className="inp" value={form.broker_nombre} onChange={(e) => set("broker_nombre", e.target.value)} /></F>
               <F label="Broker WhatsApp"><input className="inp" value={form.broker_whatsapp} onChange={(e) => set("broker_whatsapp", e.target.value)} /></F>
             </div>
-            <button onClick={guardar} disabled={saving || !form.nombre_interno} className="bg-gold text-navy-900 px-6 py-3 font-semibold disabled:opacity-40">
-              {saving ? "Guardando..." : "Guardar inmueble"}
+            <button onClick={guardar} disabled={saving || uploading || !form.nombre_interno} className="bg-gold text-navy-900 px-6 py-3 font-semibold disabled:opacity-40">
+              {saving ? "Guardando..." : form.id ? "Guardar cambios" : "Crear inmueble"}
             </button>
           </div>
         )}
@@ -138,6 +206,7 @@ export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; i
                 <div className="text-navy-900/50 text-sm">{tipoLabel(inm.tipo)} · {inm.zona || inm.ciudad} · {formatMXN(inm.precio_venta)}</div>
               </div>
               <span className={`text-xs px-2 py-1 ${inm.estatus === "disponible" ? "bg-green-100 text-green-700" : "bg-navy-900/10 text-navy-900/60"}`}>{inm.estatus}</span>
+              <button onClick={() => editar(inm)} className="text-navy-900 text-sm hover:underline">Editar</button>
               <button onClick={() => borrar(inm.id)} className="text-red-500 text-sm hover:underline">Eliminar</button>
             </div>
           ))}
