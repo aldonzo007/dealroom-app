@@ -1,4 +1,4 @@
-import { Cliente, PerfilProspecto, tipoLabel } from "./types";
+import { Cliente, PerfilProspecto, tipoLabel, formatMXN } from "./types";
 
 const BASE = "https://services.leadconnectorhq.com";
 
@@ -10,7 +10,32 @@ function headers(token: string) {
   };
 }
 
-// Resumen legible del perfil, para guardarlo como nota en el contacto.
+// Cache en memoria del id del campo "Deal Room URL" por location.
+const fieldIdCache: Record<string, string | null> = {};
+
+async function getDealRoomFieldId(cliente: Cliente): Promise<string | null> {
+  const loc = cliente.ghl_location_id!;
+  if (loc in fieldIdCache) return fieldIdCache[loc];
+  try {
+    const res = await fetch(`${BASE}/locations/${loc}/customFields?model=contact`, {
+      headers: headers(cliente.ghl_token!),
+    });
+    if (!res.ok) { fieldIdCache[loc] = null; return null; }
+    const json = await res.json();
+    const fields = json?.customFields || [];
+    const match = fields.find((f: any) => {
+      const n = (f.name || "").toLowerCase();
+      const k = (f.fieldKey || "").toLowerCase();
+      return n === "deal room url" || k.includes("deal_room_url");
+    });
+    fieldIdCache[loc] = match?.id || null;
+    return fieldIdCache[loc];
+  } catch {
+    fieldIdCache[loc] = null;
+    return null;
+  }
+}
+
 function resumenPerfil(perfil: PerfilProspecto): string {
   const tipos = (perfil.tipo_buscado || []).map((t) => tipoLabel(t as any)).join(", ");
   const partes = [
@@ -24,13 +49,20 @@ function resumenPerfil(perfil: PerfilProspecto): string {
   return partes.join(" · ");
 }
 
-// Crea o actualiza el contacto en GHL. Devuelve el contactId o null.
 export async function upsertContactoGHL(
   cliente: Cliente,
-  data: { nombre?: string; email?: string; whatsapp?: string; perfil: PerfilProspecto; dealRoomUrl: string }
+  data: {
+    nombre?: string; email?: string; whatsapp?: string;
+    perfil: PerfilProspecto; dealRoomUrl: string;
+    inmuebles: { nombre: string; precio: number }[];
+  }
 ): Promise<string | null> {
   if (!cliente.ghl_token || !cliente.ghl_location_id) return null;
   try {
+    // Guardar el link del deal room en el campo del contacto (si existe)
+    const fieldId = await getDealRoomFieldId(cliente);
+    const customFields = fieldId ? [{ id: fieldId, value: data.dealRoomUrl }] : undefined;
+
     const res = await fetch(`${BASE}/contacts/upsert`, {
       method: "POST",
       headers: headers(cliente.ghl_token),
@@ -41,6 +73,7 @@ export async function upsertContactoGHL(
         phone: data.whatsapp || undefined,
         tags: ["dealroom-prospecto"],
         source: "DealRoom portal",
+        customFields,
       }),
     });
     if (!res.ok) return null;
@@ -48,11 +81,16 @@ export async function upsertContactoGHL(
     const contactId = json?.contact?.id || json?.id;
     if (!contactId) return null;
 
-    // Nota con el perfil + link al deal room (robusto, el broker lo lee directo)
+    // Nota con perfil + inmuebles matcheados + link (el broker lo lee directo)
+    const listaInmuebles = data.inmuebles.length
+      ? data.inmuebles.map((i) => `- ${i.nombre} (${formatMXN(i.precio)})`).join("\n")
+      : "- Sin coincidencias automáticas (requiere selección manual del broker)";
+    const nota = `Nuevo prospecto DealRoom.\n\nPerfil: ${resumenPerfil(data.perfil)}\n\nInmuebles sugeridos:\n${listaInmuebles}\n\nDeal room: ${data.dealRoomUrl}`;
+
     await fetch(`${BASE}/contacts/${contactId}/notes`, {
       method: "POST",
       headers: headers(cliente.ghl_token),
-      body: JSON.stringify({ body: `Nuevo prospecto DealRoom.\n${resumenPerfil(data.perfil)}\n\nPortal: ${data.dealRoomUrl}` }),
+      body: JSON.stringify({ body: nota }),
     }).catch(() => {});
 
     return contactId;
@@ -61,7 +99,23 @@ export async function upsertContactoGHL(
   }
 }
 
-// Agrega tags al contacto (dispara workflows en GHL, ej. tarea al broker).
+// Escribe la URL del deal room en el campo "Deal Room URL" de un contacto existente.
+export async function escribirDealRoomUrl(cliente: Cliente, contactId: string, url: string): Promise<boolean> {
+  if (!cliente.ghl_token) return false;
+  try {
+    const fieldId = await getDealRoomFieldId(cliente);
+    if (!fieldId) return false;
+    const res = await fetch(`${BASE}/contacts/${contactId}`, {
+      method: "PUT",
+      headers: headers(cliente.ghl_token),
+      body: JSON.stringify({ customFields: [{ id: fieldId, value: url }] }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function agregarTagsGHL(cliente: Cliente, contactId: string, tags: string[]) {
   if (!cliente.ghl_token) return;
   try {
@@ -70,12 +124,9 @@ export async function agregarTagsGHL(cliente: Cliente, contactId: string, tags: 
       headers: headers(cliente.ghl_token),
       body: JSON.stringify({ tags }),
     });
-  } catch {
-    // no bloquea
-  }
+  } catch {}
 }
 
-// Agrega una nota al contacto (ej. "agendó visita").
 export async function agregarNotaGHL(cliente: Cliente, contactId: string, body: string) {
   if (!cliente.ghl_token) return;
   try {
@@ -84,7 +135,5 @@ export async function agregarNotaGHL(cliente: Cliente, contactId: string, body: 
       headers: headers(cliente.ghl_token),
       body: JSON.stringify({ body }),
     });
-  } catch {
-    // no bloquea
-  }
+  } catch {}
 }

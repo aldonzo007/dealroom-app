@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
     try {
       const origin = req.headers.get("origin") || `https://${req.headers.get("host")}`;
       const dealRoomUrl = `${origin}/${cliente_slug}/d/${token}`;
-      const contactId = await upsertContactoGHL(cliente, { nombre, email, whatsapp, perfil, dealRoomUrl });
+      const contactId = await upsertContactoGHL(cliente, {
+        nombre, email, whatsapp, perfil, dealRoomUrl,
+        inmuebles: matches.map((m) => ({ nombre: m.nombre_interno, precio: m.precio_venta })),
+      });
       if (contactId) {
         await sb.from("deal_rooms").update({ ghl_contact_id: contactId }).eq("token", token);
       }
