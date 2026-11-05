@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCliente, getDealRoom, getInmueblesByIds } from "@/lib/data";
+import { getCliente, getDealRoom, getInmueblesByIds, getInmueblesDestacados } from "@/lib/data";
 import { formatMXN, tipoLabel, operacionLabel } from "@/lib/types";
 import Gallery from "@/components/Gallery";
 import DatosFisicos from "@/components/DatosFisicos";
@@ -18,6 +18,10 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
   const nombre = dr.prospecto_nombre || "Estimado inversionista";
   const destacado = inmuebles[0];
   const otros = inmuebles.slice(1);
+
+  // Si no hubo match (deal room sin inmuebles), traemos opciones destacadas del catálogo
+  const sinMatch = inmuebles.length === 0;
+  const alternativas = sinMatch ? await getInmueblesDestacados(cliente.id, [], 6) : [];
 
   const broker = destacado?.broker_nombre || cliente.broker_nombre || "Su broker asignado";
   const whatsapp = (destacado?.broker_whatsapp || cliente.broker_whatsapp || "").replace(/\D/g, "");
@@ -98,7 +102,7 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
         </>
       )}
 
-      {/* Otras opciones */}
+      {/* Otras opciones (tras el match) */}
       {otros.length > 0 && (
         <section className="py-16 lg:py-24 bg-cream">
           <div className="container mx-auto px-6 lg:px-12">
@@ -106,6 +110,22 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
             <h2 className="serif text-3xl text-navy-900 mb-10">Otras opciones para usted</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {otros.map((inm) => (
+                <InmuebleCard key={inm.id} inm={inm} href={`/${slug}/inmueble/${inm.id}`} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Si no hubo match, mostramos el catálogo destacado */}
+      {sinMatch && alternativas.length > 0 && (
+        <section className="py-16 lg:py-24 bg-cream">
+          <div className="container mx-auto px-6 lg:px-12">
+            <div className="text-xs tracking-[0.3em] text-gold uppercase mb-2">Mientras tanto</div>
+            <h2 className="serif text-3xl text-navy-900 mb-3">Explore otras oportunidades</h2>
+            <p className="text-navy-900/60 mb-10 max-w-2xl">Estas propiedades están disponibles en nuestro portafolio actual. Pueden darle una idea del tipo de inversión que gestionamos mientras le preparamos su selección a la medida.</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {alternativas.map((inm) => (
                 <InmuebleCard key={inm.id} inm={inm} href={`/${slug}/inmueble/${inm.id}`} />
               ))}
             </div>

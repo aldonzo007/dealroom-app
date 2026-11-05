@@ -33,6 +33,19 @@ export async function getInmueblesDisponibles(clientId: string): Promise<Inmuebl
   return (data || []) as Inmueble[];
 }
 
+// Inmuebles destacados para mostrar cuando no hubo match (catálogo general).
+export async function getInmueblesDestacados(clientId: string, excluir: string[] = [], limit = 6): Promise<Inmueble[]> {
+  const sb = getServiceClient();
+  let q = sb
+    .from("inmuebles")
+    .select("*")
+    .eq("client_id", clientId)
+    .eq("estatus", "disponible");
+  if (excluir.length) q = q.not("id", "in", `(${excluir.join(",")})`);
+  const { data } = await q.order("created_at", { ascending: false }).limit(limit);
+  return (data || []) as Inmueble[];
+}
+
 export async function getInmueble(id: string): Promise<Inmueble | null> {
   const sb = getServiceClient();
   const { data } = await sb.from("inmuebles").select("*").eq("id", id).maybeSingle();
