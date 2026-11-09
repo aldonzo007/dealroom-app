@@ -24,12 +24,15 @@ function DealRoomMockup({ compact = false }: { compact?: boolean }) {
             <span className="px-2 py-1 bg-forest-50 text-forest-700 rounded">CDMX</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            {/* FALLBACK FOTO 1: dealroom-mockup-1.jpg · 300x300 · exterior edificio premium */}
-            <div className="aspect-square bg-gradient-to-br from-forest-200 to-forest-100 rounded" />
-            {/* FALLBACK FOTO 2: dealroom-mockup-2.jpg · 300x300 · interior residencial lujo */}
-            <div className="aspect-square bg-gradient-to-br from-forest-100 to-forest-50 rounded" />
-            {/* FALLBACK FOTO 3: dealroom-mockup-3.jpg · 300x300 · terreno comercial / plano */}
-            <div className="aspect-square bg-gradient-to-br from-forest-200 to-forest-100 rounded" />
+            <div className="aspect-square rounded overflow-hidden">
+              <img src="/landing/mockup-1.jpg" alt="Edificio comercial" className="w-full h-full object-cover" />
+            </div>
+            <div className="aspect-square rounded overflow-hidden">
+              <img src="/landing/mockup-2.jpg" alt="Residencial de lujo" className="w-full h-full object-cover" />
+            </div>
+            <div className="aspect-square rounded overflow-hidden">
+              <img src="/landing/mockup-3.jpg" alt="Terreno de inversión" className="w-full h-full object-cover" />
+            </div>
           </div>
         </div>
       </div>
