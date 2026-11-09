@@ -79,7 +79,10 @@ export default function LandingDealRoom() {
 
       {/* HERO con imagen de fondo */}
       <section className="relative overflow-hidden bg-gradient-to-b from-forest-50 to-white">
-        {/* FALLBACK: hero-bg.jpg · 1920x1080 · ciudad CDMX / skyline / edificio moderno desde arriba (opacidad baja) */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-[0.06]"
+          style={{ backgroundImage: "url(/landing/cta-bg.jpg)" }}
+        />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(47,122,78,0.08),transparent_50%)]" />
 
         <div className="relative container mx-auto px-6 lg:px-12 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
@@ -117,9 +120,8 @@ export default function LandingDealRoom() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-14 items-center">
           <div>
-            {/* FALLBACK: problema.jpg · 800x900 · broker inmobiliario frustrado viendo ficha PDF en laptop, o escritorio con papeles */}
-            <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-forest-100 to-forest-50 border border-forest-100 flex items-center justify-center">
-              <div className="text-forest-600/40 text-sm tracking-wider uppercase">imagen: broker con ficha PDF</div>
+            <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-forest-100 shadow-xl">
+              <img src="/landing/problema.png" alt="Broker saturado con fichas, post-its y seguimientos manuales" className="w-full h-full object-cover" />
             </div>
           </div>
           <div>
@@ -242,15 +244,14 @@ export default function LandingDealRoom() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { t: "Naves y bodegas", s: "Renta y venta industrial.", img: "naves.jpg · 600x400 · nave industrial moderna exterior" },
-              { t: "Residencial de lujo", s: "Casas y departamentos premium.", img: "residencial.jpg · 600x400 · casa residencial lujo" },
-              { t: "Terrenos", s: "Inversión y desarrollo.", img: "terrenos.jpg · 600x400 · terreno urbano / vista aérea lote" },
-              { t: "Comercial", s: "Locales, oficinas y plazas.", img: "comercial.jpg · 600x400 · edificio corporativo moderno" },
+              { t: "Naves y bodegas", s: "Renta y venta industrial.", img: "/landing/naves.jpg" },
+              { t: "Residencial de lujo", s: "Casas y departamentos premium.", img: "/landing/residencial.jpg" },
+              { t: "Terrenos", s: "Inversión y desarrollo.", img: "/landing/terrenos.jpg" },
+              { t: "Comercial", s: "Locales, oficinas y plazas.", img: "/landing/comercial.jpg" },
             ].map((p) => (
-              <div key={p.t} className="bg-white border border-forest-100 rounded-xl overflow-hidden hover:border-forest-600 transition-colors">
-                {/* FALLBACK: {p.img} */}
-                <div className="aspect-[3/2] bg-gradient-to-br from-forest-200 to-forest-100 flex items-center justify-center">
-                  <div className="text-forest-600/40 text-[10px] tracking-wider uppercase text-center px-2">{p.img}</div>
+              <div key={p.t} className="bg-white border border-forest-100 rounded-xl overflow-hidden hover:border-forest-600 transition-colors group">
+                <div className="aspect-[3/2] overflow-hidden">
+                  <img src={p.img} alt={p.t} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                 </div>
                 <div className="p-5">
                   <div className="font-semibold text-forest-800 mb-1">{p.t}</div>
@@ -285,18 +286,20 @@ export default function LandingDealRoom() {
             </div>
           </div>
           <div>
-            {/* FALLBACK: implementacion.jpg · 800x900 · equipo/laptop configurando, o pantalla dashboard CRM moderno */}
-            <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-forest-100 to-forest-50 border border-forest-100 flex items-center justify-center">
-              <div className="text-forest-600/40 text-sm tracking-wider uppercase">imagen: dashboard / equipo</div>
+            <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-forest-100 shadow-xl">
+              <img src="/landing/implementacion.png" alt="Dashboard DealRoom con CRM y gestión de leads inmobiliarios" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA FINAL con fondo image */}
-      <section className="relative py-20 bg-forest-800 text-white overflow-hidden">
-        {/* FALLBACK: cta-bg.jpg · 1920x600 · skyline CDMX nocturno o edificio corporativo premium (opacidad 0.3) */}
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(29,79,47,0.95),rgba(22,59,35,0.95))]" />
+      <section className="relative py-24 bg-forest-800 text-white overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(/landing/cta-bg.jpg)" }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(22,59,35,0.88),rgba(10,22,40,0.92))]" />
         <div className="relative container mx-auto px-6 lg:px-12 text-center max-w-3xl">
           <h3 className="serif text-3xl md:text-4xl font-semibold mb-4">Vea cómo DealRoom puede funcionar con tus propiedades.</h3>
           <p className="text-forest-100/80 mb-8">Agenda una demo privada de 30 minutos. Te mostramos cómo se vería con tu catálogo y tu marca.</p>
