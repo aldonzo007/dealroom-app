@@ -1,7 +1,52 @@
 import Link from "next/link";
 
 const CALENDAR = "https://api.leadconnectorhq.com/widget/bookings/conoce-geekify";
-const DEMO = "/demo";
+const DEMO = "/demo/wizard";
+
+// Mockup reutilizable del DealRoom (igual que en el hero)
+function DealRoomMockup({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className="relative">
+      <div className="bg-white rounded-2xl shadow-2xl border border-forest-100 overflow-hidden">
+        <div className="bg-forest-50 px-5 py-3 flex items-center gap-2 border-b border-forest-100">
+          <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+          <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+          <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+          <span className="ml-3 text-xs text-forest-800/50">dealroom.mx/portafolio</span>
+        </div>
+        <div className="p-6">
+          <div className="text-xs tracking-wider text-forest-600 uppercase mb-2">Portafolio privado</div>
+          <div className="serif text-2xl text-forest-800 mb-4">Hola, Jaime.</div>
+          <div className="text-sm text-forest-800/70 mb-4">Aquí tienes una selección de oportunidades de inversión en CDMX, de acuerdo a tu interés.</div>
+          <div className="flex gap-2 mb-4 text-xs flex-wrap">
+            <span className="px-2 py-1 bg-forest-50 text-forest-700 rounded">Inversión</span>
+            <span className="px-2 py-1 bg-forest-50 text-forest-700 rounded">$20-35M</span>
+            <span className="px-2 py-1 bg-forest-50 text-forest-700 rounded">CDMX</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {/* FALLBACK FOTO 1: dealroom-mockup-1.jpg · 300x300 · exterior edificio premium */}
+            <div className="aspect-square bg-gradient-to-br from-forest-200 to-forest-100 rounded" />
+            {/* FALLBACK FOTO 2: dealroom-mockup-2.jpg · 300x300 · interior residencial lujo */}
+            <div className="aspect-square bg-gradient-to-br from-forest-100 to-forest-50 rounded" />
+            {/* FALLBACK FOTO 3: dealroom-mockup-3.jpg · 300x300 · terreno comercial / plano */}
+            <div className="aspect-square bg-gradient-to-br from-forest-200 to-forest-100 rounded" />
+          </div>
+        </div>
+      </div>
+      {!compact && (
+        <div className="absolute -bottom-6 -right-4 w-56 bg-white rounded-xl shadow-xl border border-forest-100 p-4 hidden md:block">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-full bg-forest-600 text-white flex items-center justify-center text-xs font-bold">DR</div>
+            <span className="text-xs font-medium text-forest-800">DealRoom IA</span>
+          </div>
+          <div className="text-xs text-forest-800/70 bg-forest-50 rounded-lg p-2 mb-2">¿Qué tipo de inmueble estás buscando?</div>
+          <div className="text-xs bg-forest-600 text-white rounded-lg p-2 ml-6">Un edificio para inversión, CDMX, 20 a 35M</div>
+          <div className="text-xs text-forest-800/70 bg-forest-50 rounded-lg p-2 mt-2">Perfecto. Te preparo tu selección personalizada ahora.</div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function LandingDealRoom() {
   return (
@@ -23,7 +68,7 @@ export default function LandingDealRoom() {
           </div>
           <div className="flex items-center gap-3">
             <Link href={DEMO} className="hidden sm:inline-block px-4 py-2 text-sm font-medium border border-forest-600 text-forest-700 rounded hover:bg-forest-50">
-              Ver demo
+              Probar demo
             </Link>
             <a href={CALENDAR} target="_blank" rel="noopener" className="px-4 py-2 text-sm font-medium bg-forest-600 text-white rounded hover:bg-forest-700">
               Agendar demo
@@ -32,18 +77,21 @@ export default function LandingDealRoom() {
         </div>
       </nav>
 
-      {/* HERO */}
+      {/* HERO con imagen de fondo */}
       <section className="relative overflow-hidden bg-gradient-to-b from-forest-50 to-white">
-        <div className="container mx-auto px-6 lg:px-12 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
+        {/* FALLBACK: hero-bg.jpg · 1920x1080 · ciudad CDMX / skyline / edificio moderno desde arriba (opacidad baja) */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(47,122,78,0.08),transparent_50%)]" />
+
+        <div className="relative container mx-auto px-6 lg:px-12 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-block text-xs tracking-[0.2em] uppercase text-forest-600 font-medium mb-5 bg-forest-100 px-3 py-1.5 rounded">
               Para inmobiliarias y desarrolladoras
             </div>
             <h1 className="serif text-4xl md:text-5xl lg:text-6xl text-forest-800 leading-[1.1] mb-6 font-semibold">
-              Deje de perder oportunidades entre el <span className="text-forest-600">primer contacto</span> y la visita.
+              Deja de perder oportunidades entre el <span className="text-forest-600">primer contacto</span> y la visita.
             </h1>
             <p className="text-forest-800/70 text-lg leading-relaxed mb-8 max-w-xl">
-              Convierta el interés de sus prospectos en ventas con un sistema que combina Agente IA, portales personalizados (DealRoom) y un CRM diseñado para bienes raíces de alto valor.
+              Convierte el interés de tus prospectos en ventas con un sistema que combina Agente IA, portales personalizados (DealRoom) y un CRM diseñado para bienes raíces de alto valor.
             </p>
             <div className="flex flex-wrap gap-3">
               <a href={CALENDAR} target="_blank" rel="noopener" className="px-6 py-3.5 bg-forest-600 text-white font-medium rounded hover:bg-forest-700 flex items-center gap-2">
@@ -53,72 +101,47 @@ export default function LandingDealRoom() {
                 <span>▶</span> Probar el demo en vivo
               </Link>
             </div>
-          </div>
-          <div className="relative">
-            {/* Mockup del producto */}
-            <div className="bg-white rounded-2xl shadow-2xl border border-forest-100 overflow-hidden">
-              <div className="bg-forest-50 px-5 py-3 flex items-center gap-2 border-b border-forest-100">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-                <span className="ml-3 text-xs text-forest-800/50">dealroom.mx/portafolio</span>
-              </div>
-              <div className="p-6">
-                <div className="text-xs tracking-wider text-forest-600 uppercase mb-2">Portafolio privado</div>
-                <div className="serif text-2xl text-forest-800 mb-4">Hola, Alonso.</div>
-                <div className="text-sm text-forest-800/70 mb-4">Aquí tiene una selección de oportunidades de inversión en CDMX, de acuerdo a su interés.</div>
-                <div className="flex gap-2 mb-4 text-xs">
-                  <span className="px-2 py-1 bg-forest-50 text-forest-700 rounded">Inversión</span>
-                  <span className="px-2 py-1 bg-forest-50 text-forest-700 rounded">$20-35M</span>
-                  <span className="px-2 py-1 bg-forest-50 text-forest-700 rounded">CDMX</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="aspect-square bg-gradient-to-br from-forest-200 to-forest-100 rounded" />
-                  <div className="aspect-square bg-gradient-to-br from-forest-100 to-forest-50 rounded" />
-                  <div className="aspect-square bg-gradient-to-br from-forest-200 to-forest-100 rounded" />
-                </div>
-              </div>
-            </div>
-            {/* Mockup WhatsApp chat flotando */}
-            <div className="absolute -bottom-6 -right-4 w-56 bg-white rounded-xl shadow-xl border border-forest-100 p-4 hidden md:block">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-full bg-forest-600 text-white flex items-center justify-center text-xs font-bold">DR</div>
-                <span className="text-xs font-medium text-forest-800">DealRoom IA</span>
-              </div>
-              <div className="text-xs text-forest-800/70 bg-forest-50 rounded-lg p-2 mb-2">
-                ¿Qué tipo de inmueble está buscando?
-              </div>
-              <div className="text-xs bg-forest-600 text-white rounded-lg p-2 ml-6">
-                Un edificio para inversión, CDMX, 20 a 35M
-              </div>
-              <div className="text-xs text-forest-800/70 bg-forest-50 rounded-lg p-2 mt-2">
-                Perfecto. Le preparo su selección personalizada ahora.
-              </div>
+            {/* confianza */}
+            <div className="mt-10 flex items-center gap-4 text-xs text-forest-800/50">
+              <span>Usado con operaciones de</span>
+              <span className="font-semibold text-forest-800">$20M a $200M MXN</span>
+              <span>·</span>
+              <span>Setup white-glove</span>
             </div>
           </div>
+          <DealRoomMockup />
         </div>
       </section>
 
-      {/* EL PROBLEMA */}
+      {/* EL PROBLEMA con imagen lateral */}
       <section className="py-20 bg-white">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="max-w-xl mb-12">
-            <div className="text-xs tracking-wider uppercase text-forest-600 mb-3">El reto de hoy</div>
-            <h2 className="serif text-3xl md:text-4xl text-forest-800 font-semibold">La comercialización inmobiliaria pierde valor en los eslabones invisibles.</h2>
+        <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-14 items-center">
+          <div>
+            {/* FALLBACK: problema.jpg · 800x900 · broker inmobiliario frustrado viendo ficha PDF en laptop, o escritorio con papeles */}
+            <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-forest-100 to-forest-50 border border-forest-100 flex items-center justify-center">
+              <div className="text-forest-600/40 text-sm tracking-wider uppercase">imagen: broker con ficha PDF</div>
+            </div>
           </div>
-          <div className="grid md:grid-cols-4 gap-6">
-            {[
-              { icon: "💬", title: "Interés que se enfría", desc: "Prospectos que solicitan información y después dejan de responder." },
-              { icon: "📄", title: "Información dispersa", desc: "Fichas en PDF, fotos sueltas y datos incompletos." },
-              { icon: "⏱", title: "Seguimiento manual", desc: "Conversaciones, recordatorios y tareas sin un proceso claro." },
-              { icon: "👥", title: "Poca visibilidad", desc: "Es difícil saber qué prospectos están realmente interesados y en qué etapa van." },
-            ].map((p) => (
-              <div key={p.title} className="bg-forest-50 rounded-xl p-6">
-                <div className="text-2xl mb-3">{p.icon}</div>
-                <div className="font-semibold text-forest-800 mb-2">{p.title}</div>
-                <div className="text-sm text-forest-800/70">{p.desc}</div>
-              </div>
-            ))}
+          <div>
+            <div className="text-xs tracking-wider uppercase text-forest-600 mb-3">El reto de hoy</div>
+            <h2 className="serif text-3xl md:text-4xl text-forest-800 font-semibold mb-6">La ficha que envías es la última vez que ves al prospecto.</h2>
+            <p className="text-forest-800/70 mb-8">Un PDF, unas fotos, un WhatsApp y a esperar. Mientras tanto no sabes si abrió la propuesta, si la compartió, o si ya está viendo otra opción. La mayoría de los deals se enfrían aquí, no en la negociación.</p>
+            <div className="space-y-4">
+              {[
+                { icon: "💬", title: "Interés que se enfría", desc: "Prospectos que piden información y después dejan de responder." },
+                { icon: "📄", title: "Información dispersa", desc: "Fichas en PDF, fotos sueltas y datos incompletos." },
+                { icon: "⏱", title: "Seguimiento manual", desc: "Conversaciones, recordatorios y tareas sin un proceso claro." },
+                { icon: "👥", title: "Poca visibilidad", desc: "Es difícil saber qué prospectos están realmente interesados y en qué etapa van." },
+              ].map((p) => (
+                <div key={p.title} className="flex gap-4">
+                  <div className="text-2xl flex-shrink-0">{p.icon}</div>
+                  <div>
+                    <div className="font-semibold text-forest-800 mb-0.5">{p.title}</div>
+                    <div className="text-sm text-forest-800/70">{p.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -143,8 +166,8 @@ export default function LandingDealRoom() {
             {[
               { icon: "🤖", title: "Agente IA inmobiliario", desc: "Atiende, responde y califica prospectos 24/7 por web, WhatsApp y otros canales." },
               { icon: "🏛", title: "DealRoom personalizado", desc: "Un portal privado por cada prospecto, con propiedades seleccionadas, análisis y siguiente paso comercial." },
-              { icon: "📊", title: "CRM y automatización", desc: "Gestione su pipeline, seguimientos, visitas y tareas en un solo sistema con recordatorios y workflows automatizados." },
-              { icon: "💻", title: "Micrositio inmobiliario", desc: "Presente su inventario con su propia marca, capte leads y conéctelo con su proceso de ventas." },
+              { icon: "📊", title: "CRM y automatización", desc: "Gestiona tu pipeline, seguimientos, visitas y tareas en un solo sistema con recordatorios y workflows automatizados." },
+              { icon: "💻", title: "Micrositio inmobiliario", desc: "Presenta tu inventario con tu propia marca, capta leads y conéctalo con tu proceso de ventas." },
             ].map((p) => (
               <div key={p.title} className="border border-forest-100 rounded-xl p-6 hover:border-forest-600 transition-colors">
                 <div className="text-2xl mb-3">{p.icon}</div>
@@ -156,45 +179,23 @@ export default function LandingDealRoom() {
         </div>
       </section>
 
-      {/* DEALROOM FEATURE */}
+      {/* DEALROOM FEATURE (ahora con el mockup grande igual al hero) */}
       <section id="resultados" className="py-20 bg-forest-50/40">
         <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-14 items-center">
-          <div className="bg-white rounded-2xl shadow-xl border border-forest-100 overflow-hidden">
-            <div className="bg-forest-50 px-5 py-3 flex items-center gap-2 border-b border-forest-100">
-              <div className="flex gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-400" />
-                <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                <span className="w-2 h-2 rounded-full bg-green-400" />
-              </div>
-              <span className="ml-3 text-xs text-forest-800/50">DealRoom · Portafolio privado</span>
-            </div>
-            <div className="p-6">
-              <div className="h-40 bg-gradient-to-br from-forest-200 to-forest-100 rounded mb-4 flex items-end p-4">
-                <span className="text-white text-xs bg-forest-800/60 px-2 py-1 rounded">DR-002 · Edificio en Condesa</span>
-              </div>
-              <div className="text-sm font-semibold text-forest-800 mb-1">Edificio en Condesa</div>
-              <div className="text-xs text-forest-800/60 mb-3">$27,000,000 MXN</div>
-              <div className="space-y-2 text-xs text-forest-800/70">
-                <div className="flex items-center gap-2"><span className="text-forest-600">✓</span> Ubicación estratégica en CDMX.</div>
-                <div className="flex items-center gap-2"><span className="text-forest-600">✓</span> Potencial de reconversión.</div>
-                <div className="flex items-center gap-2"><span className="text-forest-600">✓</span> Dentro de su rango de inversión.</div>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <button className="flex-1 bg-forest-600 text-white py-2 text-xs rounded">Agendar visita</button>
-                <button className="flex-1 border border-forest-600 text-forest-700 py-2 text-xs rounded">Solicitar documentación</button>
-              </div>
-            </div>
+          <div className="order-2 lg:order-1">
+            <DealRoomMockup compact />
           </div>
-          <div>
+          <div className="order-1 lg:order-2">
             <div className="text-xs tracking-wider uppercase text-forest-600 mb-3">DealRoom</div>
             <h2 className="serif text-3xl md:text-4xl text-forest-800 font-semibold mb-6">Más que una ficha. Una experiencia de inversión.</h2>
+            <p className="text-forest-800/70 mb-6">Cada prospecto recibe su propio portafolio privado, con las propiedades que realmente le encajan y todo lo que necesita para avanzar al cierre.</p>
             <ul className="space-y-3 text-forest-800/80">
               {[
-                "Propiedades que realmente encajan con su búsqueda.",
+                "Propiedades que realmente encajan con tu búsqueda.",
                 "Fotografías, planos y documentación relevante.",
                 "Análisis de inversión (rentas, ocupación, potencial).",
                 "Calculadoras (ROI, crédito y gastos de escrituración).",
-                "Solicitud de visitas y contacto directo con su asesor.",
+                "Solicitud de visitas y contacto directo con tu asesor.",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-3">
                   <span className="text-forest-600 mt-1">✓</span>
@@ -216,11 +217,11 @@ export default function LandingDealRoom() {
           </div>
           <div className="grid md:grid-cols-5 gap-5">
             {[
-              { n: 1, t: "Llega el prospecto", d: "Desde su sitio, campañas, WhatsApp o referidos." },
+              { n: 1, t: "Llega el prospecto", d: "Desde tu sitio, campañas, WhatsApp o referidos." },
               { n: 2, t: "Conocemos sus necesidades", d: "Nuestro Agente IA califica y recopila los criterios clave." },
               { n: 3, t: "Generamos su DealRoom", d: "Con una selección personalizada de propiedades." },
               { n: 4, t: "Avanza la conversación", d: "Solicita información, documentos o una visita." },
-              { n: 5, t: "Todo en su CRM", d: "Seguimiento, tareas, pipeline y resultados medibles." },
+              { n: 5, t: "Todo en tu CRM", d: "Seguimiento, tareas, pipeline y resultados medibles." },
             ].map((s) => (
               <div key={s.n} className="relative">
                 <div className="w-10 h-10 rounded-full bg-forest-600 text-white flex items-center justify-center font-semibold mb-3">{s.n}</div>
@@ -232,7 +233,7 @@ export default function LandingDealRoom() {
         </div>
       </section>
 
-      {/* PARA QUIÉN */}
+      {/* PARA QUIÉN (con imagen por categoría) */}
       <section id="para-quien" className="py-20 bg-forest-50/40">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="max-w-2xl mb-12">
@@ -241,15 +242,20 @@ export default function LandingDealRoom() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { t: "Naves industriales y bodegas", s: "Renta y venta." },
-              { t: "Residencial de lujo", s: "Casas y departamentos." },
-              { t: "Terrenos", s: "Inversión y desarrollo." },
-              { t: "Comercial", s: "Locales, oficinas y plazas." },
-              { t: "Edificios", s: "Inversión y reconversión." },
+              { t: "Naves y bodegas", s: "Renta y venta industrial.", img: "naves.jpg · 600x400 · nave industrial moderna exterior" },
+              { t: "Residencial de lujo", s: "Casas y departamentos premium.", img: "residencial.jpg · 600x400 · casa residencial lujo" },
+              { t: "Terrenos", s: "Inversión y desarrollo.", img: "terrenos.jpg · 600x400 · terreno urbano / vista aérea lote" },
+              { t: "Comercial", s: "Locales, oficinas y plazas.", img: "comercial.jpg · 600x400 · edificio corporativo moderno" },
             ].map((p) => (
-              <div key={p.t} className="bg-white border border-forest-100 rounded-xl p-5 hover:border-forest-600 transition-colors">
-                <div className="font-semibold text-forest-800 mb-1">{p.t}</div>
-                <div className="text-sm text-forest-800/60">{p.s}</div>
+              <div key={p.t} className="bg-white border border-forest-100 rounded-xl overflow-hidden hover:border-forest-600 transition-colors">
+                {/* FALLBACK: {p.img} */}
+                <div className="aspect-[3/2] bg-gradient-to-br from-forest-200 to-forest-100 flex items-center justify-center">
+                  <div className="text-forest-600/40 text-[10px] tracking-wider uppercase text-center px-2">{p.img}</div>
+                </div>
+                <div className="p-5">
+                  <div className="font-semibold text-forest-800 mb-1">{p.t}</div>
+                  <div className="text-sm text-forest-800/60">{p.s}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -258,38 +264,45 @@ export default function LandingDealRoom() {
 
       {/* IMPLEMENTACIÓN */}
       <section className="py-20">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="max-w-2xl mb-14">
+        <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-14 items-center">
+          <div>
             <div className="text-xs tracking-wider uppercase text-forest-600 mb-3">Implementación</div>
-            <h2 className="serif text-3xl md:text-4xl text-forest-800 font-semibold">Nosotros lo implementamos por usted.</h2>
+            <h2 className="serif text-3xl md:text-4xl text-forest-800 font-semibold mb-6">Nosotros lo implementamos por ti.</h2>
+            <p className="text-forest-800/70 mb-8">Tú sigues vendiendo, nosotros configuramos. En unas semanas tienes tu DealRoom funcionando con tu marca, tus propiedades y tu Agente IA listo para responder.</p>
+            <div className="space-y-5">
+              {[
+                { n: 1, t: "Entendemos tu operación", d: "Revisamos tu proceso comercial y objetivos." },
+                { n: 2, t: "Configuramos la plataforma", d: "Agente IA, CRM, portales y propiedades." },
+                { n: 3, t: "Personalizamos tu marca", d: "DealRoom y micrositio con tu identidad visual." },
+                { n: 4, t: "Acompañamos a tu equipo", d: "Capacitación y puesta en marcha sin fricción técnica." },
+              ].map((s) => (
+                <div key={s.n} className="border-l-2 border-forest-600 pl-5">
+                  <div className="text-forest-600 text-sm font-semibold mb-1">0{s.n}</div>
+                  <div className="font-semibold text-forest-800 mb-1">{s.t}</div>
+                  <div className="text-sm text-forest-800/70">{s.d}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid md:grid-cols-4 gap-5">
-            {[
-              { n: 1, t: "Entendemos su operación", d: "Revisamos su proceso comercial y objetivos." },
-              { n: 2, t: "Configuramos la plataforma", d: "Agente IA, CRM, portales y propiedades." },
-              { n: 3, t: "Personalizamos su marca", d: "DealRoom y micrositio con su identidad." },
-              { n: 4, t: "Acompañamos a su equipo", d: "Capacitación y puesta en marcha sin fricción técnica." },
-            ].map((s) => (
-              <div key={s.n} className="border-l-2 border-forest-600 pl-5">
-                <div className="text-forest-600 text-sm font-semibold mb-2">0{s.n}</div>
-                <div className="font-semibold text-forest-800 mb-1">{s.t}</div>
-                <div className="text-sm text-forest-800/70">{s.d}</div>
-              </div>
-            ))}
+          <div>
+            {/* FALLBACK: implementacion.jpg · 800x900 · equipo/laptop configurando, o pantalla dashboard CRM moderno */}
+            <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-forest-100 to-forest-50 border border-forest-100 flex items-center justify-center">
+              <div className="text-forest-600/40 text-sm tracking-wider uppercase">imagen: dashboard / equipo</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA FINAL */}
-      <section className="py-16 bg-forest-800 text-white">
-        <div className="container mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="serif text-2xl md:text-3xl font-semibold mb-2">Vea cómo DealRoom puede funcionar con sus propiedades.</h3>
-            <p className="text-forest-100/80 text-sm">Agende una demo privada de 30 minutos, con sus datos.</p>
-          </div>
-          <div className="flex gap-3 flex-shrink-0">
-            <a href={CALENDAR} target="_blank" rel="noopener" className="px-6 py-3 bg-white text-forest-800 font-medium rounded hover:bg-forest-50">Agendar una demo privada</a>
-            <Link href={DEMO} className="px-6 py-3 border border-white/40 text-white font-medium rounded hover:bg-white/10">Ver ejemplo en vivo</Link>
+      {/* CTA FINAL con fondo image */}
+      <section className="relative py-20 bg-forest-800 text-white overflow-hidden">
+        {/* FALLBACK: cta-bg.jpg · 1920x600 · skyline CDMX nocturno o edificio corporativo premium (opacidad 0.3) */}
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(29,79,47,0.95),rgba(22,59,35,0.95))]" />
+        <div className="relative container mx-auto px-6 lg:px-12 text-center max-w-3xl">
+          <h3 className="serif text-3xl md:text-4xl font-semibold mb-4">Vea cómo DealRoom puede funcionar con tus propiedades.</h3>
+          <p className="text-forest-100/80 mb-8">Agenda una demo privada de 30 minutos. Te mostramos cómo se vería con tu catálogo y tu marca.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href={CALENDAR} target="_blank" rel="noopener" className="px-7 py-3.5 bg-white text-forest-800 font-medium rounded hover:bg-forest-50">📅 Agendar una demo privada</a>
+            <Link href={DEMO} className="px-7 py-3.5 border border-white/40 text-white font-medium rounded hover:bg-white/10">▶ Probar el demo en vivo</Link>
           </div>
         </div>
       </section>
@@ -309,9 +322,7 @@ export default function LandingDealRoom() {
             <a href="#plataforma" className="hover:text-forest-600">Plataforma</a>
             <a href="#para-quien" className="hover:text-forest-600">Para quién</a>
           </div>
-          <div className="text-xs">
-            © {new Date().getFullYear()} DealRoom · Todos los derechos reservados.
-          </div>
+          <div className="text-xs">© {new Date().getFullYear()} DealRoom · Todos los derechos reservados.</div>
         </div>
       </footer>
     </main>
