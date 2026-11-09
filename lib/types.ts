@@ -17,7 +17,12 @@ export interface Cliente {
   logo_url: string | null;
   color_primario: string;
   broker_nombre: string | null;
+  broker_titulo: string | null;
+  broker_foto_url: string | null;
   broker_whatsapp: string | null;
+  broker_calendar_url: string | null;
+  broker_email: string | null;
+  hero_frase: string | null;
   ghl_location_id: string | null;
   ghl_token: string | null;
   calendar_url: string | null;

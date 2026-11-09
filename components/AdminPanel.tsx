@@ -39,10 +39,77 @@ export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; i
   const [pass, setPass] = useState("");
   const [authed, setAuthed] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showAsesor, setShowAsesor] = useState(false);
   const [form, setForm] = useState<FormState>(vacio(cliente.id));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [list, setList] = useState(inmuebles);
+
+  // Datos del cliente/asesor (editables)
+  const [clienteData, setClienteData] = useState({
+    id: cliente.id,
+    logo_url: cliente.logo_url || "",
+    color_primario: cliente.color_primario || "#C5A059",
+    hero_frase: cliente.hero_frase || "",
+    broker_nombre: cliente.broker_nombre || "",
+    broker_titulo: cliente.broker_titulo || "",
+    broker_foto_url: cliente.broker_foto_url || "",
+    broker_whatsapp: cliente.broker_whatsapp || "",
+    broker_calendar_url: cliente.broker_calendar_url || "",
+    broker_email: cliente.broker_email || "",
+    calendar_url: cliente.calendar_url || "",
+  });
+  const [savingCliente, setSavingCliente] = useState(false);
+  const [uploadingBroker, setUploadingBroker] = useState(false);
+
+  function setC<K extends keyof typeof clienteData>(k: K, v: (typeof clienteData)[K]) {
+    setClienteData((d) => ({ ...d, [k]: v }));
+  }
+
+  async function subirFotoBroker(files: FileList | null) {
+    if (!files || !files.length) return;
+    setUploadingBroker(true);
+    try {
+      const fd = new FormData();
+      fd.append("files", files[0]);
+      const res = await fetch("/api/admin/upload", { method: "POST", headers: { "x-admin-pass": pass }, body: fd });
+      const data = await res.json();
+      if (data.ok && data.urls[0]) setC("broker_foto_url", data.urls[0]);
+      else alert("Error al subir: " + (data.error || ""));
+    } finally {
+      setUploadingBroker(false);
+    }
+  }
+
+  async function subirLogo(files: FileList | null) {
+    if (!files || !files.length) return;
+    setUploadingBroker(true);
+    try {
+      const fd = new FormData();
+      fd.append("files", files[0]);
+      const res = await fetch("/api/admin/upload", { method: "POST", headers: { "x-admin-pass": pass }, body: fd });
+      const data = await res.json();
+      if (data.ok && data.urls[0]) setC("logo_url", data.urls[0]);
+      else alert("Error al subir: " + (data.error || ""));
+    } finally {
+      setUploadingBroker(false);
+    }
+  }
+
+  async function guardarCliente() {
+    setSavingCliente(true);
+    const res = await fetch("/api/admin/cliente", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-pass": pass },
+      body: JSON.stringify(clienteData),
+    });
+    const data = await res.json();
+    setSavingCliente(false);
+    if (data.ok) {
+      alert("Datos del asesor guardados");
+      setShowAsesor(false);
+    } else alert("Error: " + (data.error || "no se pudo guardar"));
+  }
 
   function set<K extends keyof FormState>(k: K, v: FormState[K]) { setForm((f) => ({ ...f, [k]: v })); }
 
@@ -106,12 +173,74 @@ export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; i
   return (
     <div className="min-h-screen bg-cream p-6 lg:p-12">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="serif text-3xl text-navy-900">Inmuebles · {cliente.nombre}</h1>
-          <button onClick={showForm ? () => setShowForm(false) : nuevo} className="bg-navy-900 text-white px-5 py-2.5 text-sm font-medium">
-            {showForm ? "Cerrar" : "+ Agregar inmueble"}
-          </button>
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
+          <h1 className="serif text-3xl text-navy-900">Admin · {cliente.nombre}</h1>
+          <div className="flex gap-2">
+            <button onClick={() => { setShowAsesor(!showAsesor); setShowForm(false); }} className="bg-white border border-navy-900/20 text-navy-900 px-5 py-2.5 text-sm font-medium">
+              {showAsesor ? "Cerrar" : "⚙ Datos del asesor"}
+            </button>
+            <button onClick={showForm ? () => setShowForm(false) : nuevo} className="bg-navy-900 text-white px-5 py-2.5 text-sm font-medium">
+              {showForm ? "Cerrar" : "+ Agregar inmueble"}
+            </button>
+          </div>
         </div>
+
+        {showAsesor && (
+          <div className="bg-white border border-navy-900/10 p-6 mb-8 space-y-4">
+            <div className="text-xs text-gold-dark uppercase tracking-wide mb-2">Configuración del asesor y marca</div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <F label="Logo del cliente">
+                <div className="space-y-2">
+                  {clienteData.logo_url && <img src={clienteData.logo_url} alt="" className="h-10" />}
+                  <input type="file" accept="image/*" onChange={(e) => subirLogo(e.target.files)} className="text-sm" />
+                  <input className="inp" placeholder="o pega URL" value={clienteData.logo_url} onChange={(e) => setC("logo_url", e.target.value)} />
+                </div>
+              </F>
+              <F label="Color primario (hex)">
+                <div className="flex gap-2 items-center">
+                  <input type="color" value={clienteData.color_primario} onChange={(e) => setC("color_primario", e.target.value)} className="w-12 h-10 border border-navy-900/20" />
+                  <input className="inp flex-1" value={clienteData.color_primario} onChange={(e) => setC("color_primario", e.target.value)} />
+                </div>
+              </F>
+            </div>
+
+            <F label="Frase del hero del DealRoom (opcional, default: 'Tu selección privada de inversión inmobiliaria')">
+              <input className="inp" value={clienteData.hero_frase} onChange={(e) => setC("hero_frase", e.target.value)} placeholder="Tu selección privada de inversión inmobiliaria" />
+            </F>
+
+            <div className="border-t border-navy-900/10 pt-4 mt-4">
+              <div className="text-xs text-gold-dark uppercase tracking-wide mb-4">Asesor / Broker</div>
+              <div className="grid grid-cols-2 gap-4">
+                <F label="Foto del asesor">
+                  <div className="space-y-2">
+                    {clienteData.broker_foto_url && <img src={clienteData.broker_foto_url} alt="" className="w-20 h-20 rounded-full object-cover" />}
+                    <input type="file" accept="image/*" onChange={(e) => subirFotoBroker(e.target.files)} className="text-sm" />
+                    {uploadingBroker && <span className="text-xs text-gold-dark ml-2">Subiendo...</span>}
+                    <input className="inp" placeholder="o pega URL" value={clienteData.broker_foto_url} onChange={(e) => setC("broker_foto_url", e.target.value)} />
+                  </div>
+                </F>
+                <div className="space-y-4">
+                  <F label="Nombre del asesor">
+                    <input className="inp" value={clienteData.broker_nombre} onChange={(e) => setC("broker_nombre", e.target.value)} placeholder="Santiago Morales" />
+                  </F>
+                  <F label="Título / puesto">
+                    <input className="inp" value={clienteData.broker_titulo} onChange={(e) => setC("broker_titulo", e.target.value)} placeholder="Real Estate Advisor" />
+                  </F>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <F label="WhatsApp (con lada país, ej: 525512345678)"><input className="inp" value={clienteData.broker_whatsapp} onChange={(e) => setC("broker_whatsapp", e.target.value)} /></F>
+                <F label="Email"><input className="inp" value={clienteData.broker_email} onChange={(e) => setC("broker_email", e.target.value)} /></F>
+              </div>
+              <F label="Link de agendamiento (Calendar/HubSpot/GHL)"><input className="inp" value={clienteData.broker_calendar_url} onChange={(e) => setC("broker_calendar_url", e.target.value)} placeholder="https://calendar.app.google.com/..." /></F>
+            </div>
+
+            <button onClick={guardarCliente} disabled={savingCliente || uploadingBroker} className="bg-gold text-navy-900 px-6 py-3 font-semibold disabled:opacity-40">
+              {savingCliente ? "Guardando..." : "Guardar configuración"}
+            </button>
+          </div>
+        )}
 
         {showForm && (
           <div className="bg-white border border-navy-900/10 p-6 mb-8 space-y-4">

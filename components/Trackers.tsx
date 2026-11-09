@@ -15,10 +15,11 @@ export function PortalTracker({ token, inmuebleId }: { token: string; inmuebleId
 
 // Link que registra un evento al hacer click (PDF, WhatsApp, agendar).
 export function TrackedLink({
-  token, tipo, inmuebleId, href, className, children, external,
+  token, tipo, inmuebleId, href, className, children, external, style,
 }: {
   token: string; tipo: TipoEvento; inmuebleId?: string; href: string;
   className?: string; children: React.ReactNode; external?: boolean;
+  style?: React.CSSProperties;
 }) {
   return (
     <a
@@ -26,6 +27,7 @@ export function TrackedLink({
       target={external ? "_blank" : undefined}
       rel={external ? "noopener" : undefined}
       className={className}
+      style={style}
       onClick={() => track(token, tipo, inmuebleId)}
     >
       {children}
