@@ -61,6 +61,14 @@ export default async function FichaInmueble({ params }: { params: Promise<{ clie
             </div>
           </div>
 
+          {inm.descripcion && (
+            <div className="mb-12">
+              <div className="text-xs tracking-[0.3em] text-gold uppercase mb-6">Detalles del inmueble</div>
+              <div className="max-w-3xl text-navy-900/80 leading-relaxed whitespace-pre-wrap">
+                {inm.descripcion}
+              </div>
+            </div>
+          )}
           <div className="mb-8">
             <div className="text-xs tracking-[0.3em] text-gold uppercase mb-6">Especificaciones</div>
             <DatosFisicos inm={inm} />

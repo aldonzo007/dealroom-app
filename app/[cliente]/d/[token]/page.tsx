@@ -91,6 +91,14 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
                   </div>
                 </div>
               </div>
+              {destacado.descripcion && (
+                <div className="mb-12">
+                  <div className="text-xs tracking-[0.3em] text-gold uppercase mb-6">Detalles del inmueble</div>
+                  <div className="prose max-w-3xl text-navy-900/80 leading-relaxed whitespace-pre-wrap">
+                    {destacado.descripcion}
+                  </div>
+                </div>
+              )}
               <div>
                 <div className="text-xs tracking-[0.3em] text-gold uppercase mb-6">Especificaciones</div>
                 <DatosFisicos inm={destacado} />

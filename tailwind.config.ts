@@ -19,6 +19,15 @@ export default {
           dark: "#8E6C2D",
         },
         cream: "#f5f1e8",
+        forest: {
+          50: "#f1f7f3",
+          100: "#dcebe0",
+          200: "#b9d6c3",
+          500: "#2f7a4e",
+          600: "#246139",
+          700: "#1d4f2f",
+          800: "#163b23",
+        },
       },
       fontFamily: {
         serif: ['"Playfair Display"', "Georgia", "serif"],

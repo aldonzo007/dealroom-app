@@ -10,6 +10,7 @@ type FormState = {
   id?: string;
   client_id: string;
   nombre_interno: string; tipo: string; operacion: string; estatus: string;
+  descripcion: string;
   ciudad: string; zona: string; direccion: string; maps_link: string;
   m2_construidos: number; m2_terreno: number; ano_construccion: string;
   altura_libre: number; andenes: number; cajones: number; banos: number; recamaras: number;
@@ -24,6 +25,7 @@ function vacio(clientId: string): FormState {
   return {
     client_id: clientId,
     nombre_interno: "", tipo: "terreno", operacion: "venta", estatus: "disponible",
+    descripcion: "",
     ciudad: "", zona: "", direccion: "", maps_link: "",
     m2_construidos: 0, m2_terreno: 0, ano_construccion: "", altura_libre: 0, andenes: 0, cajones: 0, banos: 0, recamaras: 0,
     precio_venta: 0, precio_renta: 0, rango_inversion: "alto",
@@ -125,6 +127,9 @@ export default function AdminPanel({ cliente, inmuebles }: { cliente: Cliente; i
               <F label="Estatus"><select className="inp" value={form.estatus} onChange={(e) => set("estatus", e.target.value)}><option value="disponible">Disponible</option><option value="apartado">Apartado</option><option value="vendido">Vendido</option><option value="pausado">Pausado</option></select></F>
             </div>
             <F label="Dirección"><input className="inp" value={form.direccion} onChange={(e) => set("direccion", e.target.value)} /></F>
+            <F label="Descripción / detalles (se muestra en el deal room)">
+              <textarea className="inp" rows={5} value={form.descripcion} onChange={(e) => set("descripcion", e.target.value)} placeholder="Describe el inmueble, uso de suelo, oportunidad, detalles técnicos relevantes, etc." />
+            </F>
             <div className="grid grid-cols-2 gap-4">
               <F label="Precio venta MXN"><input type="number" className="inp" value={form.precio_venta} onChange={(e) => set("precio_venta", +e.target.value)} /></F>
               <F label="Rango inversión"><select className="inp" value={form.rango_inversion} onChange={(e) => set("rango_inversion", e.target.value)}>{RANGOS.map((r) => <option key={r} value={r}>{r}</option>)}</select></F>

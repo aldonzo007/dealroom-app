@@ -35,6 +35,7 @@ export interface Inmueble {
   zona: string | null;
   direccion: string | null;
   maps_link: string | null;
+  descripcion: string | null;
   m2_construidos: number;
   m2_terreno: number;
   ano_construccion: string | null;
