@@ -37,7 +37,7 @@ function DealRoomMockup({ compact = false }: { compact?: boolean }) {
         <div className="absolute -bottom-6 -right-4 w-56 bg-white rounded-xl shadow-xl border border-forest-100 p-4 hidden md:block">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-full bg-forest-600 text-white flex items-center justify-center text-xs font-bold">DR</div>
-            <span className="text-xs font-medium text-forest-800">DealRoom IA</span>
+            <span className="text-xs font-medium text-forest-800">Agente IA</span>
           </div>
           <div className="text-xs text-forest-800/70 bg-forest-50 rounded-lg p-2 mb-2">¿Qué tipo de inmueble estás buscando?</div>
           <div className="text-xs bg-forest-600 text-white rounded-lg p-2 ml-6">Un edificio para inversión, CDMX, 20 a 35M</div>
@@ -88,7 +88,7 @@ export default function LandingDealRoom() {
         <div className="relative container mx-auto px-6 lg:px-12 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-block text-xs tracking-[0.2em] uppercase text-forest-600 font-medium mb-5 bg-forest-100 px-3 py-1.5 rounded">
-              Para inmobiliarias y desarrolladoras
+              SISTEMA COMERCIAL CON IA PARA INMOBILIARIAS Y DESARROLLADORAS
             </div>
             <h1 className="serif text-4xl md:text-5xl lg:text-6xl text-forest-800 leading-[1.1] mb-6 font-semibold">
               Deja de perder oportunidades entre el <span className="text-forest-600">primer contacto</span> y la visita.
