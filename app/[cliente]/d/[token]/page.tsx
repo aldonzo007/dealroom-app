@@ -2,6 +2,14 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCliente, getDealRoom, getInmueblesByIds, getInmueblesDestacados } from "@/lib/data";
 import { formatMXN, tipoLabel, operacionLabel, Inmueble } from "@/lib/types";
+
+// Formato compacto para KPIs: $13.5M, $218K
+function formatMXNCompact(n: number): string {
+  if (!n) return "—";
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(n >= 10_000_000 ? 1 : 2).replace(/\.?0+$/, "")}M`;
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${n}`;
+}
 import DatosFisicos from "@/components/DatosFisicos";
 import Calculadora from "@/components/Calculadora";
 import InmuebleCard from "@/components/InmuebleCard";
@@ -68,11 +76,7 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-navy-900/5">
         <div className="absolute inset-0">
-          {destacado?.fotos[0] ? (
-            <img src={destacado.fotos[0]} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-cream to-navy-900/5" />
-          )}
+          <img src="/landing/cta-bg.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-cream via-cream/92 to-cream/40" />
           <div className="absolute inset-0 bg-gradient-to-b from-cream/30 via-transparent to-cream/60" />
         </div>
@@ -80,11 +84,11 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
           <div className="text-[11px] tracking-[0.35em] uppercase text-navy-900/60 font-medium mb-7">
             DealRoom <span className="opacity-40 mx-2">|</span> Portafolio personalizado
           </div>
-          <h1 className="serif text-[42px] md:text-6xl lg:text-7xl leading-[1.02] font-medium text-navy-900 max-w-3xl mb-8">
-            {cliente.hero_frase || "Tu selección privada de inversión inmobiliaria"}
+          <h1 className="serif text-[42px] md:text-6xl lg:text-7xl leading-[1.02] font-medium text-navy-900 max-w-4xl mb-8">
+            {nombreCorto}, {cliente.hero_frase ? cliente.hero_frase.charAt(0).toLowerCase() + cliente.hero_frase.slice(1) : "tu selección privada de inversión inmobiliaria"}
           </h1>
           <p className="text-navy-900/70 max-w-xl text-[15px] leading-relaxed mb-10">
-            {nombreCorto}, preparamos este portafolio de oportunidades
+            Preparamos este portafolio de oportunidades
             {perfil.ciudades?.length ? ` en ${perfil.ciudades.join(", ")}` : ""} con base en tu
             {perfil.objetivo ? ` objetivo de ${perfil.objetivo.replace(/_/g, " ")}, ` : " objetivo, "}
             presupuesto y tipo de activo preferido. Son propiedades con potencial de plusvalía, ingresos y solidez patrimonial.
@@ -155,10 +159,14 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
 
               {/* Otras propiedades (si hay) */}
               {otros.length > 0 && (
-                <div className="grid sm:grid-cols-2 gap-5">
-                  {otros.slice(0, 2).map((inm) => (
-                    <SmallPropCard key={inm.id} inm={inm} slug={slug} />
-                  ))}
+                <div>
+                  <div className="text-[10px] tracking-[0.3em] uppercase font-medium mb-3" style={{ color: primary }}>Otras opciones similares</div>
+                  <h3 className="serif text-2xl font-medium mb-5 leading-tight">Más propiedades alineadas a tu búsqueda</h3>
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    {otros.slice(0, 2).map((inm) => (
+                      <SmallPropCard key={inm.id} inm={inm} slug={slug} />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -218,9 +226,9 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
                 </p>
               </div>
               <div className="lg:col-span-3 grid grid-cols-2 lg:grid-cols-5 gap-3">
-                <KPI icon={<MoneyIcon />} label="Precio" value={destacado.operacion === "renta" ? formatMXN(destacado.precio_renta) : formatMXN(destacado.precio_venta)} sub="MXN" primary={primary} />
+                <KPI icon={<MoneyIcon />} label="Precio" value={destacado.operacion === "renta" ? formatMXNCompact(destacado.precio_renta) : formatMXNCompact(destacado.precio_venta)} sub="MXN" primary={primary} />
                 <KPI icon={<SquareIcon />} label="Superficie" value={`${(destacado.m2_construidos || destacado.m2_terreno).toLocaleString()}`} sub="m²" primary={primary} />
-                <KPI icon={<ChartIcon />} label="Renta est." value={destacado.renta_promedio_m2 > 0 ? formatMXN(destacado.renta_promedio_m2 * (destacado.m2_construidos || destacado.m2_terreno)) : "A estimar"} sub={destacado.renta_promedio_m2 > 0 ? "/ mes" : ""} primary={primary} />
+                <KPI icon={<ChartIcon />} label="Renta est." value={destacado.renta_promedio_m2 > 0 ? formatMXNCompact(destacado.renta_promedio_m2 * (destacado.m2_construidos || destacado.m2_terreno)) : "—"} sub={destacado.renta_promedio_m2 > 0 ? "/ mes" : ""} primary={primary} />
                 <KPI icon={<TrendIcon />} label="Plusvalía" value={destacado.plusvalia_anual > 0 ? `${destacado.plusvalia_anual}%` : "—"} sub="anual" primary={primary} />
                 <KPI icon={<CheckIcon />} label="Estatus" value={destacado.estatus === "disponible" ? "Disponible" : destacado.estatus} sub="" primary={primary} badge />
               </div>
@@ -319,12 +327,8 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
       {/* CTA FINAL con imagen de fondo */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          {destacado?.fotos[0] ? (
-            <img src={destacado.fotos[0]} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-navy-900" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/90 to-navy-900/70" />
+          <img src="/landing/cta-bg.jpg" alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/92 to-navy-900/75" />
         </div>
         <div className="relative container mx-auto px-6 lg:px-10 py-20 lg:py-24 text-center text-white">
           <h2 className="serif text-4xl md:text-5xl font-medium mb-5 leading-tight">¿Listo para dar el siguiente paso?</h2>
@@ -375,17 +379,17 @@ function MiniMetric({ icon, label, value }: { icon: React.ReactNode; label: stri
 
 function KPI({ icon, label, value, sub, primary, badge }: { icon: React.ReactNode; label: string; value: string; sub: string; primary: string; badge?: boolean }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+    <div className="bg-white/5 border border-white/10 rounded-lg p-4 min-w-0">
       <div className="w-8 h-8 rounded flex items-center justify-center mb-3" style={{ background: `${primary}22`, color: primary }}>
         {icon}
       </div>
-      <div className="text-[10px] tracking-[0.2em] uppercase text-white/50 font-medium mb-1">{label}</div>
+      <div className="text-[10px] tracking-[0.2em] uppercase text-white/50 font-medium mb-1 truncate">{label}</div>
       {badge ? (
         <span className="inline-block text-xs font-medium px-2 py-1 rounded" style={{ background: `${primary}22`, color: primary }}>{value}</span>
       ) : (
         <>
-          <div className="serif text-xl lg:text-2xl font-medium leading-tight">{value}</div>
-          {sub && <div className="text-[11px] text-white/50 mt-0.5">{sub}</div>}
+          <div className="serif text-lg lg:text-xl xl:text-2xl font-medium leading-tight break-words">{value}</div>
+          {sub && <div className="text-[11px] text-white/50 mt-0.5 truncate">{sub}</div>}
         </>
       )}
     </div>
