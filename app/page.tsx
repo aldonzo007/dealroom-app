@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FlowCarousel from "@/components/FlowCarousel";
 
 const CALENDAR = "https://api.leadconnectorhq.com/widget/bookings/conoce-geekify";
 const DEMO = "/demo/wizard";
@@ -90,8 +91,8 @@ export default function LandingDealRoom() {
 
         <div className="relative container mx-auto px-6 lg:px-12 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-block text-xs tracking-[0.2em] uppercase text-forest-600 font-medium mb-5 bg-forest-100 px-3 py-1.5 rounded">
-              SISTEMA COMERCIAL CON IA PARA INMOBILIARIAS Y DESARROLLADORAS
+            <div className="inline-block text-xs tracking-[0.2em] uppercase text-forest-600 mb-5 bg-forest-100 px-3 py-1.5 rounded">
+              <strong className="font-bold">SISTEMA COMERCIAL CON IA</strong> <span className="font-normal">PARA INMOBILIARIAS Y DESARROLLADORAS</span>
             </div>
             <h1 className="serif text-4xl md:text-5xl lg:text-6xl text-forest-800 leading-[1.1] mb-6 font-semibold">
               Deja de perder oportunidades entre el <span className="text-forest-600">primer contacto</span> y la visita.
@@ -184,31 +185,33 @@ export default function LandingDealRoom() {
         </div>
       </section>
 
-      {/* DEALROOM FEATURE (ahora con el mockup grande igual al hero) */}
+      {/* DEALROOM FEATURE (carrusel animado del flujo) */}
       <section id="resultados" className="py-20 bg-forest-50/40">
-        <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-14 items-center">
-          <div className="order-2 lg:order-1">
-            <DealRoomMockup compact />
+        <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-5 gap-14 items-center">
+          <div className="lg:col-span-3 order-2 lg:order-1">
+            <FlowCarousel />
           </div>
-          <div className="order-1 lg:order-2">
-            <div className="text-xs tracking-wider uppercase text-forest-600 mb-3">DealRoom</div>
+          <div className="lg:col-span-2 order-1 lg:order-2">
+            <div className="text-xs tracking-wider uppercase text-forest-600 mb-3">El flujo completo</div>
             <h2 className="serif text-3xl md:text-4xl text-forest-800 font-semibold mb-6">Más que una ficha. Una experiencia de inversión.</h2>
-            <p className="text-forest-800/70 mb-6">Cada prospecto recibe su propio portafolio privado, con las propiedades que realmente le encajan y todo lo que necesita para avanzar al cierre.</p>
-            <ul className="space-y-3 text-forest-800/80">
+            <p className="text-forest-800/70 mb-6">Desde que el prospecto llega hasta que tu asesor cierra, DealRoom orquesta cada paso del proceso comercial. Mira cómo se ve cada etapa.</p>
+            <ul className="space-y-3 text-forest-800/80 text-sm">
               {[
-                "Propiedades que realmente encajan con tu búsqueda.",
-                "Fotografías, planos y documentación relevante.",
-                "Análisis de inversión (rentas, ocupación, potencial).",
-                "Calculadoras (ROI, crédito y gastos de escrituración).",
-                "Solicitud de visitas y contacto directo con tu asesor.",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-3">
-                  <span className="text-forest-600 mt-1">✓</span>
-                  <span>{t}</span>
+                { n: "1", t: "Pre-calificación con IA", d: "Agente conversacional o wizard capturan el perfil." },
+                { n: "2", t: "Deal Room personalizado", d: "Portafolio privado con las propiedades que encajan." },
+                { n: "3", t: "Análisis de inversión", d: "Métricas, calculadora de ROI y escenarios financieros." },
+                { n: "4", t: "Agenda y WhatsApp", d: "El prospecto avanza al cierre cuando él decide." },
+                { n: "5", t: "Seguimiento en tu CRM", d: "Score de calor, tags y tareas al asesor automáticas." },
+              ].map((s) => (
+                <li key={s.n} className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-forest-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{s.n}</span>
+                  <div>
+                    <span className="font-semibold text-forest-800">{s.t}. </span>
+                    <span>{s.d}</span>
+                  </div>
                 </li>
               ))}
             </ul>
-            <div className="mt-6 text-xs text-forest-800/50">*Disponibles según la información de cada inmueble.</div>
           </div>
         </div>
       </section>
