@@ -2,6 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCliente, getDealRoom, getInmueblesByIds, getInmueblesDestacados } from "@/lib/data";
 import { formatMXN, tipoLabel, operacionLabel, Inmueble } from "@/lib/types";
+import DatosFisicos from "@/components/DatosFisicos";
+import Calculadora from "@/components/Calculadora";
+import InmuebleCard from "@/components/InmuebleCard";
+import DestacadoPhoto from "@/components/DestacadoPhoto";
+import { PortalTracker, TrackedLink } from "@/components/Trackers";
 
 // Formato compacto para KPIs: $13.5M, $218K
 function formatMXNCompact(n: number): string {
@@ -10,10 +15,11 @@ function formatMXNCompact(n: number): string {
   if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
   return `$${n}`;
 }
-import DatosFisicos from "@/components/DatosFisicos";
-import Calculadora from "@/components/Calculadora";
-import InmuebleCard from "@/components/InmuebleCard";
-import { PortalTracker, TrackedLink } from "@/components/Trackers";
+
+// filtra valores vacíos / "null" string / undefined
+function ok(v: unknown): v is string {
+  return typeof v === "string" && v.trim() !== "" && v.toLowerCase() !== "null" && v.toLowerCase() !== "undefined";
+}
 
 export default async function DealRoomPage({ params }: { params: Promise<{ cliente: string; token: string }> }) {
   const { cliente: slug, token } = await params;
@@ -41,10 +47,12 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
 
   const perfil = dr.perfil || {};
   const criterios: { label: string; value: string }[] = [];
-  if (perfil.objetivo) criterios.push({ label: "Objetivo", value: perfil.objetivo.replace(/_/g, " ") });
-  if (perfil.ciudades?.length) criterios.push({ label: "Zona", value: perfil.ciudades.join(", ") });
-  if (perfil.presupuesto) criterios.push({ label: "Presupuesto", value: formatMXN(perfil.presupuesto) });
-  if (perfil.tipo_buscado?.length) criterios.push({ label: "Tipo", value: perfil.tipo_buscado.map((t) => tipoLabel(t as never)).join(" / ") });
+  if (ok(perfil.objetivo)) criterios.push({ label: "Objetivo", value: perfil.objetivo!.replace(/_/g, " ") });
+  const ciudadesOk = (perfil.ciudades || []).filter(ok);
+  if (ciudadesOk.length) criterios.push({ label: "Zona", value: ciudadesOk.join(", ") });
+  if (perfil.presupuesto && perfil.presupuesto > 0) criterios.push({ label: "Presupuesto", value: formatMXN(perfil.presupuesto) });
+  const tiposOk = (perfil.tipo_buscado || []).filter(ok);
+  if (tiposOk.length) criterios.push({ label: "Tipo", value: tiposOk.map((t) => tipoLabel(t as never)).join(" / ") });
 
   return (
     <main className="bg-cream text-navy-900">
@@ -82,16 +90,17 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
         </div>
         <div className="relative container mx-auto px-6 lg:px-10 pt-14 lg:pt-20 pb-14">
           <div className="text-[11px] tracking-[0.35em] uppercase text-navy-900/60 font-medium mb-7">
-            DealRoom <span className="opacity-40 mx-2">|</span> Portafolio personalizado
+            DealRoom <span className="opacity-40 mx-2">|</span> {sinMatch ? "Búsqueda en revisión" : "Portafolio personalizado"}
           </div>
           <h1 className="serif text-[42px] md:text-6xl lg:text-7xl leading-[1.02] font-medium text-navy-900 max-w-4xl mb-8">
-            {nombreCorto}, {cliente.hero_frase ? cliente.hero_frase.charAt(0).toLowerCase() + cliente.hero_frase.slice(1) : "tu selección privada de inversión inmobiliaria"}
+            {sinMatch
+              ? `${nombreCorto}, aún no encontramos tu match exacto`
+              : `${nombreCorto}, ${cliente.hero_frase ? cliente.hero_frase.charAt(0).toLowerCase() + cliente.hero_frase.slice(1) : "tu selección privada de inversión inmobiliaria"}`}
           </h1>
           <p className="text-navy-900/70 max-w-xl text-[15px] leading-relaxed mb-10">
-            Preparamos este portafolio de oportunidades
-            {perfil.ciudades?.length ? ` en ${perfil.ciudades.join(", ")}` : ""} con base en tu
-            {perfil.objetivo ? ` objetivo de ${perfil.objetivo.replace(/_/g, " ")}, ` : " objetivo, "}
-            presupuesto y tipo de activo preferido. Son propiedades con potencial de plusvalía, ingresos y solidez patrimonial.
+            {sinMatch
+              ? `No encontramos propiedades que coincidan al 100% con los criterios que nos compartiste${ciudadesOk.length ? ` en ${ciudadesOk.join(", ")}` : ""}. Tu asesor revisará tu búsqueda y te contactará con opciones a la medida en las próximas 24 horas. Mientras tanto, abajo puedes explorar el portafolio actual.`
+              : `Preparamos este portafolio de oportunidades${ciudadesOk.length ? ` en ${ciudadesOk.join(", ")}` : ""} con base en tu${ok(perfil.objetivo) ? ` objetivo de ${perfil.objetivo!.replace(/_/g, " ")}, ` : " "}presupuesto y tipo de activo preferido. Son propiedades con potencial de plusvalía, ingresos y solidez patrimonial.`}
           </p>
           {criterios.length > 0 && (
             <div className="flex flex-wrap gap-3">
@@ -121,12 +130,8 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
               <article className="bg-white rounded-xl border border-navy-900/10 overflow-hidden shadow-sm">
                 <div className="grid md:grid-cols-5">
                   <div className="md:col-span-3 relative aspect-[4/3] md:aspect-auto md:min-h-[420px]">
-                    {destacado.fotos[0] ? (
-                      <img src={destacado.fotos[0]} alt={destacado.nombre_interno} className="absolute inset-0 w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 bg-navy-900/5 flex items-center justify-center text-navy-900/30 text-sm">Sin foto</div>
-                    )}
-                    <div className="absolute top-4 left-4 bg-navy-900/80 backdrop-blur text-white px-3 py-1.5 text-[10px] tracking-[0.25em] uppercase font-medium">
+                    <DestacadoPhoto fotos={destacado.fotos} alt={destacado.nombre_interno} />
+                    <div className="absolute top-4 left-4 bg-navy-900/80 backdrop-blur text-white px-3 py-1.5 text-[10px] tracking-[0.25em] uppercase font-medium pointer-events-none">
                       Oportunidad destacada
                     </div>
                   </div>
@@ -213,9 +218,32 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
         </section>
       )}
 
+      {/* DOCUMENTOS Y ESPECIFICACIONES */}
+      {destacado && (
+        <section className="container mx-auto px-6 lg:px-10 py-12 lg:py-16">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
+            <div>
+              <div className="text-[10px] tracking-[0.3em] uppercase font-medium mb-3" style={{ color: primary }}>Documentos y recursos</div>
+              <h3 className="serif text-3xl font-medium mb-7 leading-tight">Toda la información clave</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <DocTile icon={<DocIcon />} label="Ficha técnica" href={destacado.pdf_ficha} action="↓" />
+                <DocTile icon={<PlanIcon />} label="Plano" href={destacado.pdf_ficha} action="↓" />
+                <DocTile icon={<LayerIcon />} label="Uso de suelo" href={null} action="↓" />
+                <DocTile icon={<PinIcon />} label="Ubicación en mapa" href={destacado.maps_link} action="→" />
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] tracking-[0.3em] uppercase font-medium mb-3" style={{ color: primary }}>Especificaciones</div>
+              <h3 className="serif text-3xl font-medium mb-7 leading-tight">Detalles técnicos</h3>
+              <DatosFisicos inm={destacado} />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* RESUMEN EJECUTIVO (banda oscura) */}
       {destacado && (
-        <section className="bg-navy-900 text-white">
+        <section id="analisis" className="bg-navy-900 text-white scroll-mt-20">
           <div className="container mx-auto px-6 lg:px-10 py-14 lg:py-16">
             <div className="grid lg:grid-cols-5 gap-10 items-center">
               <div className="lg:col-span-2">
@@ -240,54 +268,6 @@ export default async function DealRoomPage({ params }: { params: Promise<{ clien
       {/* CALCULADORA */}
       {destacado && destacado.precio_venta > 0 && (
         <Calculadora inm={destacado} token={token} />
-      )}
-
-      {/* DOCUMENTOS + UBICACIÓN */}
-      {destacado && (
-        <section className="container mx-auto px-6 lg:px-10 py-14 lg:py-16">
-          <div className="grid lg:grid-cols-5 gap-10">
-            <div className="lg:col-span-3">
-              <h3 className="serif text-3xl font-medium mb-2">Documentos y recursos</h3>
-              <p className="text-navy-900/60 text-sm mb-7">Toda la información clave para tu evaluación, en un solo lugar.</p>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <DocTile icon={<DocIcon />} label="Ficha técnica" href={destacado.pdf_ficha} action="↓" />
-                <DocTile icon={<PlanIcon />} label="Plano" href={destacado.pdf_ficha} action="↓" />
-                <DocTile icon={<LayerIcon />} label="Uso de suelo" href={null} action="↓" />
-                <DocTile icon={<GalleryIcon />} label={`Galería${destacado.fotos.length ? ` (${destacado.fotos.length})` : ""}`} href={`/${slug}/inmueble/${destacado.id}`} action="→" />
-                <DocTile icon={<PinIcon />} label="Ubicación" href={destacado.maps_link} action="→" />
-              </div>
-
-              <div className="mt-10">
-                <h4 className="serif text-xl font-medium mb-4">Especificaciones</h4>
-                <DatosFisicos inm={destacado} />
-              </div>
-            </div>
-            <div className="lg:col-span-2">
-              <h3 className="serif text-3xl font-medium mb-2">Ubicación</h3>
-              <p className="text-navy-900/60 text-sm mb-7">Zona estratégica con alta demanda y conectividad.</p>
-              <div className="bg-white border border-navy-900/10 rounded-xl overflow-hidden shadow-sm">
-                <div className="aspect-[4/3] bg-cream relative flex items-center justify-center">
-                  <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(10,22,40,.08) 0%, transparent 50%), linear-gradient(135deg, #f5f1e8 0%, #e8ddc5 100%)' }} />
-                  <div className="relative text-center">
-                    <div className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white" style={{ background: primary }}>
-                      <PinIcon />
-                    </div>
-                    <div className="text-xs font-medium text-navy-900/70">{[destacado.zona, destacado.ciudad].filter(Boolean).join(", ") || "CDMX"}</div>
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="text-sm font-medium mb-1">{[destacado.zona, destacado.ciudad].filter(Boolean).join(", ") || "Ubicación"}</div>
-                  <p className="text-xs text-navy-900/60 leading-relaxed mb-3">Zona consolidada con alta demanda, excelente conectividad y plusvalía sostenida.</p>
-                  {destacado.maps_link && (
-                    <a href={destacado.maps_link} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-sm font-medium" style={{ color: primary }}>
-                      Ver en mapa <span>→</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       )}
 
       {/* POR QUÉ SELECCIONAMOS */}
